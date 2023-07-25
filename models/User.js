@@ -24,6 +24,18 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
+    },
+    language: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     age: {
       type: Number,
     },
