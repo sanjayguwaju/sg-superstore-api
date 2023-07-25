@@ -24,6 +24,22 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    age: {
+      type: Number,
+    },
+    gender: {
+      type: String,
+      enum:['male','female','other'],
+    },
+    address: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
     img: {
       type: String,
     },
