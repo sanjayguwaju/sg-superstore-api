@@ -34,8 +34,21 @@ const verifyTokenAndAdmin = (req, res, next) => {
   });
 };
 
+const verifyUserRole = (req, res, next) => {
+  const allowedRoles = req.route.allowedRoles || []; // get the allowed roles for the current route, or use an empty array if not set
+  const userRole = req.user.role; // get the role of the authenticated user
+  if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) { // check if the user's role is allowed for the current route
+    next();
+  } else {
+    res.status(403).json("You are not allowed to do that!");
+  }
+};
+
+
+
 module.exports = {
   verifyToken,
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
+  verifyUserRole
 };
