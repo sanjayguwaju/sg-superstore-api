@@ -3,10 +3,12 @@ const {
   verifyToken,
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
+  verifyUserRole,
 } = require("./verifyToken");
 
 const router = require("express").Router();
 
+// Add New User
 router.post("/adduser", async (req,res)=> {
   const newUser = new User(req.body);
   try {
