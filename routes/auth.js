@@ -1,11 +1,32 @@
 const router = require("express").Router();
 const User = require("../models/User");
-const CryptoJS = require("crypto-js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-//REGISTER
+// Check if JWT secret is defined
+if (!process.env.JWT_SEC) {
+  throw new Error("JWT_SEC is not defined in the environment variables");
+}
 
+// Helper function to hash password
+const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
+
+// Helper function to generate JWT
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      isAdmin: user.isAdmin,
+    },
+    process.env.JWT_SEC,
+    { expiresIn: "3d" }
+  );
+};
+
+//REGISTER
 router.post("/register", async (req, res) => {
   try {
     const existingUser = await User.findOne({
@@ -17,8 +38,7 @@ router.post("/register", async (req, res) => {
         .json({ message: "User with this username or email already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await hashPassword(req.body.password);
 
     const newUser = new User({
       username: req.body.username,
@@ -27,21 +47,20 @@ router.post("/register", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+
+    const { password, ...userWithoutPassword } = savedUser;
+    res.status(201).json(userWithoutPassword);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
 //LOGIN
-
-
-
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     if (!user) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -49,17 +68,10 @@ router.post("/login", async (req, res) => {
       user.password
     );
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const accessToken = jwt.sign(
-      {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.JWT_SEC,
-      { expiresIn: "3d" }
-    );
+    const accessToken = generateToken(user);
 
     const { password, ...others } = user._doc;
 
