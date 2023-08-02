@@ -3,12 +3,6 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-// Check if JWT secret is defined
-if (!process.env.JWT_SEC) {
-  throw new Error("JWT_SEC is not defined in the environment variables");
-}
-
-// Helper function to hash password
 const hashPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
